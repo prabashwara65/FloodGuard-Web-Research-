@@ -262,10 +262,21 @@ const AdminPage = () => {
     }
   };
 
+  const syncStats = (updates = {}) => {
+    setStats((prevStats) => ({
+      ...prevStats,
+      ...updates,
+    }));
+  };
+
   const fetchStations = async () => {
     try {
       const response = await api.get('/stations');
-      setStations(response.data.stations || []);
+      const stationList = response.data.stations || [];
+      setStations(stationList);
+      syncStats({
+        activeStations: stationList.filter((station) => station.isActive !== false).length,
+      });
     } catch (error) {
       console.error('Error fetching stations:', error);
     }
@@ -276,7 +287,7 @@ const AdminPage = () => {
       const response = await api.get('/users');
       const usersList = response.data.users || [];
       setUsers(usersList);
-      setStats((prevStats) => ({ ...prevStats, users: usersList.length }));
+      syncStats({ users: usersList.length });
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -285,11 +296,14 @@ const AdminPage = () => {
   const fetchPredictions = async () => {
     try {
       const response = await api.get('/predictions');
-      setPredictions(response.data.predictions || []);
-      console.log('Fetched predictions:', response.data.predictions);
+      const predictionList = response.data.predictions || [];
+      setPredictions(predictionList);
+      syncStats({ predictions: predictionList.length });
+      console.log('Fetched predictions:', predictionList);
     } catch (error) {
       console.error('Error fetching predictions:', error);
       setPredictions([]);
+      syncStats({ predictions: 0 });
     }
   };
 
@@ -705,7 +719,7 @@ const handleForecastSubmit = async (event) => {
         {isSidebarExpanded && (
           <section className="px-3 pt-4 pb-1">
             <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#a3aed0]">Live summary</p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-2">
               {statsCards.map((stat) => {
                 const Icon = stat.icon;
                 return (

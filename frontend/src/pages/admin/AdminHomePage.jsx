@@ -407,6 +407,8 @@ const AdminHomePage = ({
         
         const latestPred = getLatestPrediction(station.stationId, station.stationName);
         const hasPrediction = latestPred !== null;
+        const riskLevel = latestPred?.riskLevel?.toLowerCase?.();
+        const isHighRisk = Boolean(latestPred?.warning) || riskLevel === 'high' || riskLevel === 'critical';
         
         const formattedDate = hasPrediction 
             ? new Date(latestPred.predictionDate).toLocaleDateString('en-US', {
@@ -455,8 +457,19 @@ const AdminHomePage = ({
                     </div>
                 )}
 
-                {/* Dark overlay */}
+                {/* Base image shade */}
                 <div className="absolute inset-0 bg-black/40"></div>
+
+                {/* Prediction-driven station mask */}
+                {hasPrediction && (
+                    <>
+                        <div className={`absolute inset-0 z-[1] mix-blend-multiply ${isHighRisk ? 'bg-red-600/55' : 'bg-emerald-600/45'}`}></div>
+                        <div className={`absolute right-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-lg backdrop-blur-sm ${isHighRisk ? 'border-red-200/50 bg-red-600/85' : 'border-emerald-200/50 bg-emerald-600/85'}`}>
+                            {isHighRisk ? <AlertTriangle className="h-3.5 w-3.5" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                            {isHighRisk ? 'High risk' : 'Normal'}
+                        </div>
+                    </>
+                )}
 
                 {/* Prediction Value - Centered */}
                 {hasPrediction && (
@@ -1005,13 +1018,13 @@ const AdminHomePage = ({
                     <button type="button" onClick={handleLogout} className="inline-flex items-center gap-2 rounded-xl bg-[#f4f7fe] px-4 py-2.5 text-sm font-bold text-[#4318ff] transition hover:bg-[#4318ff] hover:text-white"><LogOut className="h-4 w-4" /> Logout</button>
                 </div>
             </section> */}
-            <div className="rounded-2xl border border-[#edf0f7] bg-white p-5 shadow-[0_4px_18px_rgba(112,144,176,0.07)]">
+            <div className="rounded-xl bg-[#999999] p-4 shadow">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold text-[#2b3674] flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                         <MapPin className="w-5 h-5" />
                         Monitoring Stations
                     </h2>
-                    <span className="rounded-full bg-[#f4f7fe] px-3 py-1 text-xs font-bold text-[#4318ff]">{stations.length} stations</span>
+                    <span className="text-sm text-white/80">{stations.length} stations</span>
                 </div>
                 
                 <div 

@@ -238,31 +238,31 @@ const RunPredictionPage = ({
         switch(riskLevel?.toLowerCase()) {
             case 'critical':
                 return [
-                    '🚨 IMMEDIATE: Issue evacuation orders',
-                    '📞 Activate emergency response teams',
-                    '📊 Monitor water levels every 30 minutes',
-                    '📢 Alert all local authorities and communities'
+                    'Issue evacuation orders immediately',
+                    'Activate emergency response teams',
+                    'Monitor water levels every 30 minutes',
+                    'Alert local authorities and communities'
                 ];
             case 'high':
                 return [
-                    '⚠️ Alert local authorities immediately',
-                    '🧱 Prepare sandbags and flood barriers',
-                    '📡 Monitor weather updates continuously',
-                    '🚗 Prepare evacuation routes'
+                    'Alert local authorities immediately',
+                    'Prepare sandbags and flood barriers',
+                    'Monitor weather updates continuously',
+                    'Prepare evacuation routes'
                 ];
             case 'moderate':
                 return [
-                    '📊 Monitor water levels regularly',
-                    '🔍 Check drainage systems for blockages',
-                    '📱 Stay informed via weather alerts',
-                    '🆘 Prepare emergency supplies'
+                    'Monitor water levels regularly',
+                    'Check drainage systems for blockages',
+                    'Stay informed via weather alerts',
+                    'Prepare emergency supplies'
                 ];
             default:
                 return [
-                    '📊 Continue routine monitoring',
-                    '✅ Maintain standard preparedness',
-                    '📡 Update weather data periodically',
-                    '📋 Review emergency protocols'
+                    'Continue routine monitoring',
+                    'Maintain standard preparedness',
+                    'Update weather data periodically',
+                    'Review emergency protocols'
                 ];
         }
     };
@@ -277,8 +277,8 @@ const RunPredictionPage = ({
         const stationValue = forecastForm.station;
         const stationLabel = STATIONS.find(s => s.value === stationValue)?.label || stationValue;
         
-        addLog('🌤️ Fetching weather data from OpenWeather API...', 'info');
-        addLog(`📍 Station: ${stationLabel}`, 'info');
+        addLog('Fetching weather data from OpenWeather API...', 'info');
+        addLog(`Station: ${stationLabel}`, 'info');
         
         try {
             const response = await api.get(`/weather/rainfall/${stationValue}?days=3`);
@@ -299,15 +299,15 @@ const RunPredictionPage = ({
                 rainfallDetails['Source'] = data.source || 'OpenWeather API';
                 rainfallDetails['Station'] = stationLabel;
                 
-                addLog('✅ Rainfall data retrieved successfully!', 'success');
-                addLog('📊 Past 3 Days Rainfall Data:', 'data', rainfallDetails);
-                addLog('💡 Click "Run Prediction" to generate forecast', 'info');
+                addLog('Rainfall data retrieved successfully.', 'success');
+                addLog('Past 3 days rainfall data:', 'data', rainfallDetails);
+                addLog('Click "Run Prediction" to generate the forecast.', 'info');
             }
         } catch (error) {
             console.error('Rainfall fetch error:', error);
             setRainfallError(error.response?.data?.error || 'Failed to fetch rainfall data');
-            addLog(`❌ Error fetching rainfall: ${error.response?.data?.error || 'Unknown error'}`, 'error');
-            addLog('💡 Check your OpenWeather API key and try again', 'warning');
+            addLog(`Error fetching rainfall: ${error.response?.data?.error || 'Unknown error'}`, 'error');
+            addLog('Check your OpenWeather API key and try again.', 'warning');
         } finally {
             setIsRainfallLoading(false);
         }
@@ -318,7 +318,7 @@ const RunPredictionPage = ({
         event.preventDefault();
         
         if (!hasRainfallData) {
-            addLog('⚠️ Please fetch rainfall data first!', 'warning');
+            addLog('Please fetch rainfall data before running the forecast.', 'warning');
             return;
         }
         
@@ -332,27 +332,27 @@ const RunPredictionPage = ({
         try {
             const stationLabel = STATIONS.find(s => s.value === forecastForm.station)?.label || forecastForm.station;
             
-            addLog('🚀 Starting prediction process...', 'info');
-            addLog(`📍 Station: ${stationLabel}`, 'info');
-            addLog(`📊 Using rainfall data: ${rainfallData.rainfallData.join(', ')}mm`, 'info');
-            addLog(`📏 Threshold: ${forecastForm.threshold}m`, 'info');
-            addLog(`📈 Horizon: ${forecastForm.horizon}`, 'info');
+            addLog('Starting prediction process...', 'info');
+            addLog(`Station: ${stationLabel}`, 'info');
+            addLog(`Using rainfall data: ${rainfallData.rainfallData.join(', ')}mm`, 'info');
+            addLog(`Threshold: ${forecastForm.threshold}m`, 'info');
+            addLog(`Horizon: ${forecastForm.horizon}`, 'info');
             
-            addLog('🧠 Connecting to ML prediction model...', 'info');
+            addLog('Connecting to ML prediction model...', 'info');
             await sleep(500);
-            addLog('✅ Model connection established', 'success');
+            addLog('Model connection established.', 'success');
             
-            addLog('⚙️ Preprocessing data for model...', 'info');
+            addLog('Preprocessing data for model...', 'info');
             await sleep(400);
-            addLog('✅ Data prepared for prediction', 'success');
+            addLog('Data prepared for prediction.', 'success');
             
-            addLog('🔄 Running prediction...', 'info');
+            addLog('Running prediction...', 'info');
             await handleForecastSubmit(event);
-            addLog('⏳ Processing model results...', 'info');
+            addLog('Processing model results...', 'info');
             
         } catch (error) {
-            addLog(`❌ Error: ${error.message || 'Failed to generate prediction'}`, 'error');
-            addLog('💡 Check your backend server and try again', 'warning');
+            addLog(`Error: ${error.message || 'Failed to generate prediction'}`, 'error');
+            addLog('Check your backend server and try again.', 'warning');
             setIsProcessing(false);
         }
     };
@@ -496,28 +496,27 @@ const RunPredictionPage = ({
 
     return (
         <div className="space-y-6">
-            {/* Header Card */}
-            <div className="bg-white rounded-xl shadow p-6">
-                <div className="flex justify-between items-center mb-4">
+            <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.06)]">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                            <Icons.Brain />
-                            Run Prediction
-                        </h2>
-                        <p className="text-sm text-gray-500">Fetch real rainfall data, then run the prediction model</p>
+                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-500">Forecast</p>
+                        <h2 className="mt-2 text-2xl font-bold text-slate-800">Run Prediction</h2>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Fetch rainfall data and generate a flood outlook for the selected station.
+                        </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className={`text-sm ${forecastLoading || isProcessing ? 'text-yellow-600' : hasRainfallData ? 'text-green-600' : 'text-gray-400'}`}>
-                            {forecastLoading || isProcessing ? '⏳ Processing...' : 
-                             hasRainfallData ? '✅ Data Ready' : '⏳ Fetch Data First'}
-                        </span>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-600">
+                        <span className={`h-2.5 w-2.5 rounded-full ${forecastLoading || isProcessing ? 'bg-amber-400' : hasRainfallData ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                        {forecastLoading || isProcessing ? 'Processing' : hasRainfallData ? 'Data ready' : 'Awaiting data'}
                     </div>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmitWithLogs} className="space-y-4">
-                    <div className="grid gap-3 md:grid-cols-[1.2fr_0.8fr_0.8fr_auto_auto]">
+                <form onSubmit={handleSubmitWithLogs} className="mt-6">
+                    <div className="grid gap-3 lg:grid-cols-[1.3fr_0.8fr_0.8fr_auto_auto]">
                         <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                Station
+                            </label>
                             <select
                                 value={forecastForm.station}
                                 onChange={(event) => {
@@ -525,7 +524,7 @@ const RunPredictionPage = ({
                                     setHasRainfallData(false);
                                     setRainfallData(null);
                                 }}
-                                className="border border-gray-300 rounded-lg px-3 py-2 bg-white w-full"
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
                                 required
                                 disabled={forecastLoading || isProcessing || isRainfallLoading}
                             >
@@ -538,10 +537,13 @@ const RunPredictionPage = ({
                         </div>
 
                         <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                Horizon
+                            </label>
                             <select
                                 value={forecastForm.horizon}
                                 onChange={(event) => setForecastForm({ ...forecastForm, horizon: event.target.value })}
-                                className="border border-gray-300 rounded-lg px-3 py-2 bg-white w-full"
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
                                 disabled={forecastLoading || isProcessing}
                             >
                                 <option value="24H">24 Hours</option>
@@ -550,315 +552,301 @@ const RunPredictionPage = ({
                             </select>
                         </div>
 
-                        <input
-                            type="number"
-                            step="0.1"
-                            value={forecastForm.threshold}
-                            onChange={(event) => setForecastForm({ ...forecastForm, threshold: event.target.value })}
-                            placeholder="Threshold (m)"
-                            className="border border-gray-300 rounded-lg px-3 py-2"
-                            disabled={forecastLoading || isProcessing}
-                        />
+                        <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                Threshold
+                            </label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                value={forecastForm.threshold}
+                                onChange={(event) => setForecastForm({ ...forecastForm, threshold: event.target.value })}
+                                placeholder="Threshold (m)"
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                                disabled={forecastLoading || isProcessing}
+                            />
+                        </div>
 
                         <button
                             type="button"
                             onClick={handleFetchRainfall}
                             disabled={isRainfallLoading || forecastLoading || isProcessing}
-                            className={`rounded-lg px-4 py-2 font-medium flex items-center justify-center gap-2 ${
-                                isRainfallLoading ? 'bg-gray-400 text-white' :
-                                hasRainfallData ? 'bg-green-600 text-white hover:bg-green-700' :
-                                'bg-blue-600 text-white hover:bg-blue-700'
-                            } disabled:opacity-60`}
+                            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                                isRainfallLoading ? 'bg-slate-400 text-white' :
+                                hasRainfallData ? 'bg-emerald-500 text-white hover:bg-emerald-600' :
+                                'bg-blue-500 text-white hover:bg-blue-600'
+                            } disabled:cursor-not-allowed disabled:opacity-70`}
                         >
                             {isRainfallLoading ? (
-                                <>
-                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <span className="flex items-center justify-center gap-2">
+                                    <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    Loading...
-                                </>
+                                    Loading
+                                </span>
                             ) : hasRainfallData ? (
-                                <>
+                                <span className="flex items-center justify-center gap-2">
                                     <Icons.Check />
                                     Data Loaded
-                                </>
+                                </span>
                             ) : (
-                                <>
+                                <span className="flex items-center justify-center gap-2">
                                     <Icons.Cloud />
                                     Get Rainfall
-                                </>
+                                </span>
                             )}
                         </button>
 
                         <button
                             type="submit"
                             disabled={!hasRainfallData || forecastLoading || isProcessing || isRainfallLoading}
-                            className={`rounded-lg px-4 py-2 font-medium flex items-center justify-center gap-2 ${
+                            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
                                 !hasRainfallData || forecastLoading || isProcessing
-                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                                    : 'bg-violet-500 text-white hover:bg-violet-600 shadow-[0_10px_20px_rgba(139,92,246,0.25)]'
                             }`}
                         >
                             {forecastLoading || isProcessing ? (
-                                <>
-                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <span className="flex items-center justify-center gap-2">
+                                    <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    Processing...
-                                </>
+                                    Processing
+                                </span>
                             ) : (
-                                <>
+                                <span className="flex items-center justify-center gap-2">
                                     <Icons.Play />
                                     Run Prediction
-                                </>
+                                </span>
                             )}
                         </button>
                     </div>
                 </form>
 
-                <p className="mt-2 text-sm text-gray-500 flex items-center gap-2">
+                <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
                     <Icons.ArrowRight />
-                    Step 1: Get Rainfall &nbsp;→&nbsp; Step 2: Run Prediction
-                </p>
-
-                {forecastError && <p className="mt-3 text-sm text-red-600">{forecastError}</p>}
-            </div>
-
-            {/* Rainfall Data Section */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow border border-blue-200 p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-blue-800 flex items-center gap-2">
-                        <Icons.Rain />
-                        🌧️ Rainfall Data
-                        {hasRainfallData && (
-                            <span className="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
-                                {rainfallData?.source || 'REAL Data'}
-                            </span>
-                        )}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        <span className={`text-sm ${isRainfallLoading ? 'text-yellow-600' : hasRainfallData ? 'text-green-600' : 'text-gray-400'}`}>
-                            {isRainfallLoading ? '⏳ Loading...' : hasRainfallData ? '✅ Fetched' : '⏳ Not Fetched'}
-                        </span>
-                        <button
-                            onClick={handleFetchRainfall}
-                            disabled={isRainfallLoading || forecastLoading || isProcessing}
-                            className="text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
-                        >
-                            <Icons.Refresh />
-                        </button>
-                    </div>
+                    <span>Step 1: Fetch rainfall</span>
+                    <span className="text-slate-300">→</span>
+                    <span>Step 2: Run forecast</span>
                 </div>
 
-                {rainfallData && hasRainfallData ? (
-                    <div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {rainfallData.rainfallData.map((rainfall, index) => {
-                                const day = new Date();
-                                day.setDate(day.getDate() - (rainfallData.rainfallData.length - index));
-                                return (
-                                    <div key={index} className="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
-                                        <p className="text-xs text-gray-500 flex items-center gap-1">
-                                            <Icons.Database />
-                                            {day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                        </p>
-                                        <p className="text-3xl font-bold text-blue-700">{rainfall}mm</p>
-                                        <p className="text-xs text-gray-400">precipitation</p>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 bg-white rounded-lg p-3 border border-blue-100">
-                            <span>📊 Total: <strong>{rainfallData.totalRainfall}mm</strong></span>
-                            <span>📈 Average: <strong>{rainfallData.averageRainfall}mm</strong></span>
-                            <span>📍 Station: <strong>{rainfallData.station || STATIONS.find(s => s.value === forecastForm.station)?.label || forecastForm.station}</strong></span>
-                            <span>🕐 Fetched: <strong>{new Date(rainfallData.fetchedAt).toLocaleTimeString()}</strong></span>
-                        </div>
-                        {rainfallError && (
-                            <p className="mt-2 text-sm text-red-600">{rainfallError}</p>
-                        )}
-                    </div>
-                ) : (
-                    <div className="text-center py-8 text-gray-400 bg-white rounded-lg border border-dashed border-blue-200">
-                        <div className="text-4xl mb-2">☁️</div>
-                        <p className="text-sm">No rainfall data fetched yet.</p>
-                        <p className="text-xs">Click "Get Rainfall" to fetch real data from OpenWeather API.</p>
-                    </div>
-                )}
+                {forecastError && <p className="mt-3 text-sm font-medium text-red-600">{forecastError}</p>}
             </div>
 
-            {/* Prediction Results with SMS Button */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl shadow border border-purple-200 p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-purple-800 flex items-center gap-2">
-                        <Icons.Chart />
-                        🧠 Prediction Results
-                        {forecastResult && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                forecastResult.warning ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'
-                            }`}>
-                                {forecastResult.warning ? '⚠️ Warning' : '✅ Normal'}
+            <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+                <div className="rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-6 shadow-[0_12px_30px_rgba(59,130,246,0.08)]">
+                    <div className="mb-5 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-slate-800">Rainfall data</h3>
+                        <div className="flex items-center gap-2">
+                            <span className={`text-xs font-medium ${isRainfallLoading ? 'text-amber-600' : hasRainfallData ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                {isRainfallLoading ? 'Loading' : hasRainfallData ? 'Fetched' : 'Not fetched'}
                             </span>
-                        )}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        <span className={`text-sm ${forecastLoading || isProcessing ? 'text-yellow-600' : forecastResult ? 'text-green-600' : 'text-gray-400'}`}>
-                            {forecastLoading || isProcessing ? '⏳ Processing...' : forecastResult ? '✅ Completed' : '⏳ Pending'}
+                            <button
+                                onClick={handleFetchRainfall}
+                                disabled={isRainfallLoading || forecastLoading || isProcessing}
+                                className="rounded-full border border-blue-200 bg-white p-2 text-blue-600 transition hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50"
+                                aria-label="Refresh rainfall data"
+                            >
+                                <Icons.Refresh />
+                            </button>
+                        </div>
+                    </div>
+
+                    {rainfallData && hasRainfallData ? (
+                        <div>
+                            <div className="grid gap-4 md:grid-cols-3">
+                                {rainfallData.rainfallData.map((rainfall, index) => {
+                                    const day = new Date();
+                                    day.setDate(day.getDate() - (rainfallData.rainfallData.length - index));
+                                    return (
+                                        <div key={index} className="rounded-2xl border border-white/80 bg-white p-4 shadow-sm">
+                                            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                                                {day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                            </p>
+                                            <p className="mt-3 text-3xl font-bold text-blue-700">{rainfall}mm</p>
+                                            <p className="mt-1 text-xs text-slate-400">Precipitation</p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="mt-4 flex flex-wrap gap-3 rounded-2xl border border-blue-100 bg-white/80 p-3 text-sm text-slate-600">
+                                <span>Total: <strong>{rainfallData.totalRainfall}mm</strong></span>
+                                <span>Average: <strong>{rainfallData.averageRainfall}mm</strong></span>
+                                <span>Station: <strong>{rainfallData.station || STATIONS.find(s => s.value === forecastForm.station)?.label || forecastForm.station}</strong></span>
+                                <span>Fetched: <strong>{new Date(rainfallData.fetchedAt).toLocaleTimeString()}</strong></span>
+                            </div>
+
+                            {rainfallError && <p className="mt-3 text-sm text-red-600">{rainfallError}</p>}
+                        </div>
+                    ) : (
+                        <div className="rounded-2xl border border-dashed border-blue-200 bg-white/70 py-10 text-center">
+                            <div className="mb-3 flex justify-center">
+                                <div className="rounded-full bg-blue-100 p-4 text-blue-600">
+                                    <Icons.Cloud />
+                                </div>
+                            </div>
+                            <p className="text-sm font-medium text-slate-500">No rainfall data available yet.</p>
+                            <p className="mt-1 text-xs text-slate-400">Click “Get Rainfall” to retrieve the latest weather values.</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-6 shadow-[0_12px_30px_rgba(139,92,246,0.08)]">
+                    <div className="mb-5 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-slate-800">Status overview</h3>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${forecastResult ? (forecastResult.warning ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') : 'bg-slate-100 text-slate-500'}`}>
+                            {forecastResult ? (forecastResult.warning ? 'Warning' : 'Normal') : 'Pending'}
                         </span>
                     </div>
+
+                    <div className="space-y-3">
+                        <div className="rounded-2xl bg-white p-4 border border-violet-100">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Station</p>
+                            <p className="mt-2 text-lg font-bold text-slate-800">
+                                {STATIONS.find(s => s.value === forecastForm.station)?.label || forecastForm.station}
+                            </p>
+                        </div>
+                        <div className="rounded-2xl bg-white p-4 border border-violet-100">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Threshold</p>
+                            <p className="mt-2 text-lg font-bold text-slate-800">{Number(forecastResult?.threshold || forecastForm.threshold || 1.5).toFixed(1)}m</p>
+                        </div>
+                        <div className="rounded-2xl bg-white p-4 border border-violet-100">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Horizon</p>
+                            <p className="mt-2 text-lg font-bold text-slate-800">{forecastForm.horizon}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.06)]">
+                <div className="mb-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-violet-50 p-2 text-violet-600">
+                            <Icons.Chart />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-slate-800">Prediction results</h3>
+                            <p className="text-sm text-slate-500">Latest forecast values for the selected station.</p>
+                        </div>
+                    </div>
+                    <span className={`text-xs font-semibold ${forecastLoading || isProcessing ? 'text-amber-600' : forecastResult ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {forecastLoading || isProcessing ? 'Processing' : forecastResult ? 'Completed' : 'Pending'}
+                    </span>
                 </div>
 
                 {forecastResult ? (
                     <div>
-                        <div className="bg-white rounded-lg p-4 border border-purple-200">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
-                                    <p className="text-sm text-gray-600">
-                                        Station: <strong>{STATIONS.find(s => s.value === forecastResult.station)?.label || forecastResult.station}</strong>
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Threshold: <strong>{Number(forecastResult.threshold || 1.5).toFixed(1)}m</strong>
-                                        &nbsp;|&nbsp; Horizon: <strong>{forecastForm.horizon}</strong>
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-gray-600">Risk Level</p>
-                                    <p className={`text-xl font-bold ${
-                                        forecastResult.warning ? 'text-red-600' : 'text-green-600'
-                                    }`}>
-                                        {forecastResult.riskLevel?.toUpperCase() || (forecastResult.warning ? 'HIGH' : 'LOW')}
-                                    </p>
-                                </div>
+                        <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <p className="text-sm text-slate-500">Risk Level</p>
+                                <p className={`text-2xl font-bold ${forecastResult.warning ? 'text-red-600' : 'text-emerald-600'}`}>
+                                    {forecastResult.riskLevel?.toUpperCase() || (forecastResult.warning ? 'HIGH' : 'LOW')}
+                                </p>
                             </div>
+                            <div className="text-sm text-slate-500">
+                                Threshold: <strong className="text-slate-700">{Number(forecastResult.threshold || 1.5).toFixed(1)}m</strong>
+                                <span className="mx-2 text-slate-300">|</span>
+                                Confidence: <strong className="text-slate-700">{forecastResult.confidence || 0}%</strong>
+                            </div>
+                        </div>
 
-                            {/* Prediction Cards */}
-                            <div className="grid gap-3 md:grid-cols-3 mt-4">
-                                {getPredictionData().map((pred, index) => (
-                                    <div key={index} className={`rounded-lg p-3 border ${pred.warning ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
-                                        <p className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                                            <Icons.Database />
-                                            {pred.formattedDate || 'Date N/A'}
-                                        </p>
-                                        <p className="text-2xl font-bold text-gray-800">
-                                            {pred.value !== null && pred.value !== undefined ? `${pred.value.toFixed(2)}m` : 'N/A'}
-                                        </p>
-                                        <div className="flex items-center justify-between mt-1">
-                                            <span className={`text-xs font-medium ${pred.warning ? 'text-red-600' : 'text-green-600'}`}>
-                                                {pred.warning ? '⚠️ Warning' : '✅ Normal'}
-                                            </span>
-                                            {/* Send SMS Button for specific date */}
-                                            <button
-                                                onClick={() => openSMSModal(index)}
-                                                className="text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition-colors flex items-center gap-1"
-                                            >
-                                                <Icons.Send className="w-3 h-3" />
-                                                SMS
-                                            </button>
-                                        </div>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            {getPredictionData().map((pred, index) => (
+                                <div key={index} className={`rounded-2xl border p-4 ${pred.warning ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50'}`}>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                        {pred.formattedDate || 'Date N/A'}
+                                    </p>
+                                    <p className="mt-3 text-3xl font-bold text-slate-800">
+                                        {pred.value !== null && pred.value !== undefined ? `${pred.value.toFixed(2)}m` : 'N/A'}
+                                    </p>
+                                    <div className="mt-3 flex items-center justify-between">
+                                        <span className={`text-xs font-semibold ${pred.warning ? 'text-red-600' : 'text-emerald-600'}`}>
+                                            {pred.warning ? 'Warning' : 'Normal'}
+                                        </span>
+                                        <button
+                                            onClick={() => openSMSModal(index)}
+                                            className="rounded-lg bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-violet-600"
+                                        >
+                                            Send SMS
+                                        </button>
                                     </div>
-                                ))}
-                            </div>
-
-                            {/* Send All SMS Button */}
-                            <div className="mt-4 flex justify-center">
-                                <button
-                                    onClick={() => openSMSModal(null)}
-                                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:shadow-lg hover:shadow-purple-600/25 transition-all duration-200 flex items-center gap-2 text-sm font-medium"
-                                >
-                                    <Icons.Send className="w-4 h-4" />
-                                    Send SMS for All Dates
-                                </button>
-                            </div>
-
-                            {forecastResult.confidence && (
-                                <div className="mt-3 text-sm text-gray-600 bg-purple-50 rounded-lg p-2 border border-purple-100">
-                                    Confidence: <strong>{forecastResult.confidence}%</strong>
                                 </div>
-                            )}
+                            ))}
+                        </div>
+
+                        <div className="mt-5 flex justify-center">
+                            <button
+                                onClick={() => openSMSModal(null)}
+                                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(99,102,241,0.25)] transition hover:shadow-[0_14px_24px_rgba(99,102,241,0.35)]"
+                            >
+                                <Icons.Send className="w-4 h-4" />
+                                Send SMS for all dates
+                            </button>
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-400 bg-white rounded-lg border border-dashed border-purple-200">
-                        <div className="text-4xl mb-2">🧠</div>
-                        <p className="text-sm">No prediction results yet.</p>
-                        <p className="text-xs">Fetch rainfall data first, then click "Run Prediction".</p>
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-10 text-center">
+                        <div className="mb-3 flex justify-center">
+                            <div className="rounded-full bg-violet-100 p-4 text-violet-600">
+                                <Icons.Brain />
+                            </div>
+                        </div>
+                        <p className="text-sm font-medium text-slate-500">No prediction results yet.</p>
+                        <p className="mt-1 text-xs text-slate-400">Fetch rainfall data first, then run the forecast.</p>
                     </div>
                 )}
             </div>
 
-            {/* Logs Section */}
-            <div className="bg-white rounded-xl shadow p-6">
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-gray-700">📋 Process Logs</h3>
-                        <span className="text-xs text-gray-400">({logs.length} entries)</span>
+            <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.06)]">
+                <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-slate-100 p-2 text-slate-600">
+                            <Icons.Database />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-800">Process log</h3>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setIsLogsVisible(!isLogsVisible)}
-                            className="text-xs text-blue-600 hover:text-blue-700"
-                        >
-                            {isLogsVisible ? 'Hide Logs' : 'Show Logs'}
+                        <button onClick={() => setIsLogsVisible(!isLogsVisible)} className="text-xs font-medium text-blue-600 hover:text-blue-700">
+                            {isLogsVisible ? 'Hide' : 'Show'}
                         </button>
                         {logs.length > 0 && (
-                            <button
-                                onClick={() => setLogs([])}
-                                className="text-xs text-red-600 hover:text-red-700"
-                            >
-                                Clear Logs
+                            <button onClick={() => setLogs([])} className="text-xs font-medium text-red-600 hover:text-red-700">
+                                Clear
                             </button>
                         )}
                     </div>
                 </div>
 
                 {isLogsVisible && (
-                    <div 
-                        ref={logsContainerRef}
-                        className="border border-gray-200 rounded-lg bg-gray-50 p-3 max-h-64 overflow-y-auto"
-                        style={{ scrollBehavior: 'smooth' }}
-                    >
+                    <div ref={logsContainerRef} className="max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-3" style={{ scrollBehavior: 'smooth' }}>
                         {logs.length === 0 ? (
-                            <div className="text-center py-8 text-gray-400">
-                                <div className="text-2xl mb-1">📭</div>
-                                <p className="text-sm">No logs yet. Follow the two-step process above.</p>
-                            </div>
+                            <div className="py-8 text-center text-sm text-slate-400">No log entries yet.</div>
                         ) : (
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                                 {logs.map((log) => (
-                                    <div
-                                        key={log.id}
-                                        className={`border-l-4 ${getLogBorderColor(log.type)} pl-3 py-1.5 bg-white rounded-r-lg`}
-                                    >
-                                        <div className="flex items-start gap-2">
-                                            <span className="text-xs">{getLogIcon(log.type)}</span>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className={`text-xs font-medium ${getLogColor(log.type)}`}>
-                                                        {log.message}
-                                                    </span>
-                                                    <span className="text-[10px] text-gray-400 ml-auto whitespace-nowrap">
-                                                        {log.timestamp}
-                                                    </span>
+                                    <div key={log.id} className={`rounded-xl border-l-4 bg-white p-3 ${getLogBorderColor(log.type)} shadow-sm`}>
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-sm">{getLogIcon(log.type)}</span>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className={`text-xs font-medium ${getLogColor(log.type)}`}>{log.message}</span>
+                                                    <span className="text-[10px] text-slate-400">{log.timestamp}</span>
                                                 </div>
-                                                
+
                                                 {log.details && typeof log.details === 'object' && (
-                                                    <div className="mt-1">
-                                                        <button
-                                                            onClick={() => toggleLogExpansion(log.id)}
-                                                            className="text-[10px] text-blue-600 hover:text-blue-700"
-                                                        >
-                                                            {expandedLogs[log.id] ? '▼ Hide details' : '▶ Show details'}
+                                                    <div className="mt-2">
+                                                        <button onClick={() => toggleLogExpansion(log.id)} className="text-[10px] font-medium text-blue-600 hover:text-blue-700">
+                                                            {expandedLogs[log.id] ? 'Hide details' : 'Show details'}
                                                         </button>
                                                         {expandedLogs[log.id] && (
-                                                            <div className="mt-1 p-2 bg-gray-50 rounded border border-gray-200 text-[10px]">
+                                                            <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-2 text-[10px] text-slate-600">
                                                                 {Object.entries(log.details).map(([key, value]) => (
-                                                                    <div key={key} className="flex justify-between py-0.5 border-b border-gray-100 last:border-0">
-                                                                        <span className="text-gray-600">{key}:</span>
-                                                                        <span className="font-medium text-gray-800">
-                                                                            {Array.isArray(value) ? value.join(' • ') : String(value)}
-                                                                        </span>
+                                                                    <div key={key} className="flex justify-between gap-3 border-b border-slate-100 py-1 last:border-b-0">
+                                                                        <span>{key}</span>
+                                                                        <span className="font-medium text-slate-800">{Array.isArray(value) ? value.join(' • ') : String(value)}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -875,18 +863,15 @@ const RunPredictionPage = ({
                 )}
 
                 {logs.length > 0 && (
-                    <div className="mt-2 flex items-center gap-4 text-[10px] text-gray-500">
-                        <span>✅ {logs.filter(l => l.type === 'success').length} Success</span>
-                        <span>⚠️ {logs.filter(l => l.type === 'warning').length} Warnings</span>
-                        <span>❌ {logs.filter(l => l.type === 'error').length} Errors</span>
-                        <span className="ml-auto">
-                            Last updated: {logs[logs.length - 1]?.timestamp}
-                        </span>
+                    <div className="mt-3 flex flex-wrap items-center gap-4 text-[10px] font-medium text-slate-500">
+                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">{logs.filter(l => l.type === 'success').length} Success</span>
+                        <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-700">{logs.filter(l => l.type === 'warning').length} Warnings</span>
+                        <span className="rounded-full bg-red-50 px-2 py-1 text-red-700">{logs.filter(l => l.type === 'error').length} Errors</span>
+                        <span className="ml-auto text-slate-400">Last updated: {logs[logs.length - 1]?.timestamp}</span>
                     </div>
                 )}
             </div>
 
-            {/* SMS Modal */}
             <SendSMSModal
                 isOpen={smsModalOpen}
                 onClose={closeSMSModal}
