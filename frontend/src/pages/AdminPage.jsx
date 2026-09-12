@@ -1,6 +1,8 @@
 // frontend/src/pages/AdminPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../features/auth/authSlice';
 import {
   LayoutDashboard,
   TrendingUp,
@@ -80,7 +82,13 @@ import ManageUsersPage from './admin/ManageUsersPage';
 import SettingsPage from './admin/SettingsPage';
 
 const AdminPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
   const [stats, setStats] = useState({
     users: 0,
     locations: 0,
@@ -599,7 +607,7 @@ const handleForecastSubmit = async (event) => {
   };
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-50 to-blue-50/30'} flex`}>
+    <div className={`vision-admin ${isDarkMode ? 'vision-admin--dark bg-gray-900' : 'bg-[#f4f7fe]'} min-h-screen flex`}>
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -611,8 +619,8 @@ const handleForecastSubmit = async (event) => {
       {/* Sidebar */}
       <aside
         className={`fixed lg:relative z-50 ${
-          isDarkMode ? 'bg-gray-800' : 'bg-gradient-to-b from-slate-900 to-slate-800'
-        } text-white flex flex-col shadow-2xl transition-all duration-300 ease-in-out ${
+          isDarkMode ? 'bg-[#1b2559]' : 'bg-white'
+        } text-[#2b3674] flex flex-col shadow-[10px_0_35px_rgba(112,144,176,0.08)] transition-all duration-300 ease-in-out ${
           isSidebarExpanded ? 'w-72' : 'w-20'
         } ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
@@ -658,14 +666,13 @@ const handleForecastSubmit = async (event) => {
               </span>
             </div>
             {isSidebarExpanded && (
-              <div className="flex-1 min-w-0">
+              <div className="vision-admin-main flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">{user?.name || 'Admin'}</p>
                 <p className="text-xs text-slate-400 truncate">{user?.email || 'admin@floodguard.com'}</p>
               </div>
             )}
           </div>
         </div>
-
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-1.5">
           {sidebarItems.map((item) => {
@@ -694,30 +701,29 @@ const handleForecastSubmit = async (event) => {
           })}
         </nav>
 
-        {/* Sidebar Footer */}
+{/* Live dashboard summary */}
         {isSidebarExpanded && (
-          <div className="p-4 border-t border-white/10">
-            <div className="bg-white/5 rounded-xl p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-green-400" />
-                  <span className="text-xs text-slate-400">System Online</span>
-                </div>
-                <span className="text-xs text-slate-500">v2.0.0</span>
-              </div>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                  <div className="h-full w-3/4 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"></div>
-                </div>
-                <span className="text-[10px] text-slate-500">75%</span>
-              </div>
+          <section className="px-3 pt-4 pb-1">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#a3aed0]">Live summary</p>
+            <div className="grid grid-cols-2 gap-2">
+              {statsCards.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.title} className="rounded-xl border border-[#edf0f7] bg-[#f8f9ff] p-3 transition hover:-translate-y-0.5 hover:shadow-md">
+                    <div className="flex items-center justify-between gap-2"><Icon className={`h-4 w-4 ${stat.iconColor}`} /><span className="text-lg font-bold text-[#2b3674]">{stat.value}</span></div>
+                    <p className="mt-2 text-[10px] font-bold leading-3 text-[#707eae]">{stat.title}</p>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          </section>
         )}
+
+        {/* Navigation */}
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0">
+      <main className="vision-admin-main flex-1 min-w-0">
         {/* Top Bar */}
         <header className={`${isDarkMode ? 'bg-gray-800/80 border-gray-700' : 'bg-white/80 border-gray-200/50'} backdrop-blur-lg border-b sticky top-0 z-30`}>
           <div className="flex items-center justify-between px-4 md:px-6 py-3">
@@ -780,7 +786,7 @@ const handleForecastSubmit = async (event) => {
               <button 
                 onClick={() => {
                   if (window.confirm('Are you sure you want to logout?')) {
-                    // Handle logout
+                    handleLogout();
                   }
                 }}
                 className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -793,7 +799,7 @@ const handleForecastSubmit = async (event) => {
               <button 
                 onClick={() => {
                   if (window.confirm('Are you sure you want to logout?')) {
-                    // Handle logout
+                    handleLogout();
                   }
                 }}
                 className="md:hidden p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -805,38 +811,7 @@ const handleForecastSubmit = async (event) => {
         </header>
 
         {/* Page Content */}
-        <div className="p-4 md:p-6 animate-fade-in-up">
-          {/* Dashboard Stats Cards - Only show on home view */}
-          {activeView === 'home' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {statsCards.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div
-                    key={index}
-                    className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 dark:border-gray-700 group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.title}</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stat.value}</p>
-                      </div>
-                      <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <Icon className={`w-6 h-6 ${stat.iconColor}`} />
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-green-600 dark:text-green-400 font-medium">↑ 12%</span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">from last month</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
+        <div className="vision-admin-content p-4 md:p-6 animate-fade-in-up">
           {/* Main Content */}
           {renderContent()}
         </div>

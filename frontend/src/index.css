@@ -36,3 +36,67 @@
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
   }
 }
+/* Vision UI treatment for the functional admin workspace. */
+@layer components {
+  .vision-admin {
+    color: #2b3674;
+    background: #f4f7fe;
+  }
+  .vision-admin aside {
+    border-right: 1px solid #f1f3f9;
+  }
+  .vision-admin:not(.vision-admin--dark) aside .border-white\/10 {
+    border-color: #f1f3f9;
+  }
+  .vision-admin:not(.vision-admin--dark) aside .text-slate-300,
+  .vision-admin:not(.vision-admin--dark) aside .text-slate-400,
+  .vision-admin:not(.vision-admin--dark) aside .text-slate-500 {
+    color: #a3aed0;
+  }
+  .vision-admin:not(.vision-admin--dark) aside .text-white {
+    color: #2b3674;
+  }
+  .vision-admin:not(.vision-admin--dark) aside .bg-white\/5,
+  .vision-admin:not(.vision-admin--dark) aside .hover\:bg-white\/10:hover {
+    background-color: #f4f7fe;
+  }
+  .vision-admin:not(.vision-admin--dark) aside .bg-gradient-to-r.from-blue-600,
+  .vision-admin:not(.vision-admin--dark) aside .text-white.bg-gradient-to-r {
+    color: white;
+  }
+  .vision-admin .vision-admin-main > header {
+    margin: 16px 20px 0;
+    border: 1px solid rgba(255,255,255,.9);
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(20,29,74,.04);
+  }
+  .vision-admin .vision-admin-content {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+  .vision-admin .vision-admin-content > .grid > div,
+  .vision-admin .vision-admin-content .bg-white:not(.fixed):not(.absolute) {
+    border-color: #edf0f7;
+    box-shadow: 0 4px 18px rgba(112,144,176,.07);
+  }
+  .vision-admin .vision-admin-content input,
+  .vision-admin .vision-admin-content select,
+  .vision-admin .vision-admin-content textarea {
+    border-color: #e0e5f2;
+    border-radius: 12px;
+  }
+  .vision-admin .vision-admin-content button.bg-gradient-to-r {
+    border-radius: 12px;
+    box-shadow: 0 7px 18px rgba(67,24,255,.18);
+  }
+  .vision-admin .vision-admin-content h1,
+  .vision-admin .vision-admin-content h2,
+  .vision-admin .vision-admin-content h3 {
+    color: #2b3674;
+  }
+  .vision-admin--dark .vision-admin-content h1,
+  .vision-admin--dark .vision-admin-content h2,
+  .vision-admin--dark .vision-admin-content h3 {
+    color: white;
+  }
+}

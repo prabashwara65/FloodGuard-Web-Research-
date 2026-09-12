@@ -1,5 +1,8 @@
 // frontend/src/pages/admin/AdminHomePage.jsx
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../../features/auth/authSlice';
 import {
   MapPin,
   X,
@@ -66,6 +69,7 @@ import {
   Loader2,
   Check,
   XCircle,
+  LogOut,
 } from 'lucide-react';
 import api from '../../api/axios';
 
@@ -82,6 +86,15 @@ const AdminHomePage = ({
     onNavigateToStations,
     users = [],
 }) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { user } = useSelector((state) => state.auth);
+
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate('/login');
+    };
+
     // Find specific stations by ID
     const station001 = stations.find(s => s.stationId === "001");
     const station002 = stations.find(s => s.stationId === "002");
@@ -982,13 +995,23 @@ const AdminHomePage = ({
 
     return (
         <div className="space-y-6">
-            <div className="rounded-xl shadow p-4" style={{ backgroundColor: '#999999' }}>
+            {/* <section className="flex flex-col gap-4 rounded-2xl border border-white/60 bg-white/80 p-5 shadow-[0_4px_18px_rgba(112,144,176,0.07)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#4318ff] to-[#7551ff] text-base font-bold text-white shadow-lg shadow-indigo-100">{(user?.name || 'A').charAt(0).toUpperCase()}</div>
+                    <div><p className="text-xs font-bold uppercase tracking-[0.12em] text-[#a3aed0]">Admin workspace</p><h1 className="mt-0.5 text-xl font-bold text-[#2b3674]">Welcome back, {user?.name || 'Admin'}</h1><p className="mt-0.5 text-sm text-[#707eae]">Your flood monitoring network is ready.</p></div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="hidden rounded-xl bg-[#f4f7fe] px-3 py-2 text-right sm:block"><p className="text-xs font-bold text-[#2b3674]">{user?.email || 'admin@floodguard.com'}</p><p className="text-[11px] font-medium text-[#a3aed0]">Administrator</p></div>
+                    <button type="button" onClick={handleLogout} className="inline-flex items-center gap-2 rounded-xl bg-[#f4f7fe] px-4 py-2.5 text-sm font-bold text-[#4318ff] transition hover:bg-[#4318ff] hover:text-white"><LogOut className="h-4 w-4" /> Logout</button>
+                </div>
+            </section> */}
+            <div className="rounded-2xl border border-[#edf0f7] bg-white p-5 shadow-[0_4px_18px_rgba(112,144,176,0.07)]">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-[#2b3674] flex items-center gap-2">
                         <MapPin className="w-5 h-5" />
                         Monitoring Stations
                     </h2>
-                    <span className="text-sm text-white/80">{stations.length} stations</span>
+                    <span className="rounded-full bg-[#f4f7fe] px-3 py-1 text-xs font-bold text-[#4318ff]">{stations.length} stations</span>
                 </div>
                 
                 <div 

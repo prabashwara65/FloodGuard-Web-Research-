@@ -12,8 +12,6 @@ import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
 
-// Components
-import Navbar from './components/common/Navbar';
 
 //  ProtectedRoute
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -46,7 +44,6 @@ function AppContent() {
 
     return (
         <>
-            {user && <Navbar />}
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
