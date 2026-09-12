@@ -187,7 +187,13 @@ Karunakara Awadanayen Sitinna..
 
     try {
       const response = await api.post('/sms/custom', {
-        station: station?.stationName || 'Unknown',
+        station: station?.stationName || station?.stationId || 'Unknown',
+        prediction: prediction ? {
+          id: prediction._id || prediction.id,
+          predictionDate: prediction.predictionDate || prediction.date,
+          predictionValue: prediction.predictionValue ?? prediction.value,
+          warning: Boolean(prediction.warning),
+        } : undefined,
         message: customMessage,
         users: selectedUserObjects.map(u => ({
           id: u._id,

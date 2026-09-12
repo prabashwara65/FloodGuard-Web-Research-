@@ -1,12 +1,13 @@
 // backend/controllers/smsController.js
 const notifyLkService = require('../services/notifyLkService');
 const User = require('../models/User');
+const SMSWarning = require('../models/SMSWarning');
 
 class SMSController {
     // Send custom SMS to users
     async sendCustomSMS(req, res) {
         try {
-            const { station, message, users } = req.body;
+            const { station, message, users, prediction } = req.body;
             
             console.log('📱 Custom SMS Request:');
             console.log(`   Station: ${station}`);
@@ -41,6 +42,39 @@ class SMSController {
 
             // Send SMS via Notify.lk
             const result = await notifyLkService.sendBulkSMS(phoneNumbers, message);
+            const deliveryResults = result.results || [];
+            const recipients = users.filter((user) => user.phone).map((user) => {
+                const phoneSuffix = String(user.phone).replace(/\D/g, '').slice(-9);
+                const delivery = deliveryResults.find((item) => (
+                    String(item.phone || '').replace(/\D/g, '').slice(-9) === phoneSuffix
+                )) || {};
+
+                return {
+                    userId: user.id,
+                    name: user.name,
+                    phone: user.phone,
+                    email: user.email,
+                    status: delivery.success ? 'sent' : 'failed',
+                    providerMessageId: delivery.messageId,
+                    error: delivery.error,
+                    sentAt: delivery.timestamp || (delivery.success ? new Date() : undefined),
+                };
+            });
+            const smsWarning = await SMSWarning.create({
+                station: station || 'Unknown',
+                message,
+                prediction: prediction ? {
+                    predictionId: prediction.id || prediction._id,
+                    predictionDate: prediction.predictionDate || prediction.date,
+                    predictionValue: prediction.predictionValue ?? prediction.value,
+                    warning: prediction.warning,
+                } : undefined,
+                recipients,
+                sentCount: result.sent || 0,
+                failedCount: result.failed || 0,
+                provider: 'Notify.lk',
+                createdBy: req.user?._id,
+            });
             
             res.json({
                 success: result.sent > 0,
@@ -50,7 +84,8 @@ class SMSController {
                     total: result.total,
                     results: result.results,
                     summary: result.summary,
-                    provider: 'Notify.lk'
+                    provider: 'Notify.lk',
+                    warning: smsWarning
                 }
             });
         } catch (error) {
@@ -62,6 +97,35 @@ class SMSController {
         }
     }
 
+    // Read the persisted SMS warning history.
+    async getSMSWarnings(req, res) {
+        try {
+            const warnings = await SMSWarning.find()
+                .sort({ createdAt: -1 })
+                .populate('createdBy', 'name email')
+                .lean();
+
+            res.json({ success: true, warnings });
+        } catch (error) {
+            console.error('❌ SMS warning history error:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
+    // Delete a persisted SMS warning record. This never recalls a delivered SMS.
+    async deleteSMSWarning(req, res) {
+        try {
+            const warning = await SMSWarning.findByIdAndDelete(req.params.id);
+            if (!warning) {
+                return res.status(404).json({ success: false, error: 'SMS warning not found' });
+            }
+
+            res.json({ success: true, message: 'SMS warning deleted' });
+        } catch (error) {
+            console.error('❌ SMS warning delete error:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    }
     // Send test SMS
     async sendTestSMS(req, res) {
         try {

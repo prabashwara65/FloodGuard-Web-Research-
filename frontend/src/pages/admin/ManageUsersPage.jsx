@@ -52,6 +52,16 @@ import {
   ShieldOff as ShieldOffIcon,
 } from 'lucide-react';
 
+const NEW_USER_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+const getUserCreatedAt = (user) => user.createdAt || user.created_at || user.joinedAt;
+
+const isNewUser = (user) => {
+  const createdAt = new Date(getUserCreatedAt(user)).getTime();
+
+  return Number.isFinite(createdAt) && createdAt <= Date.now() && Date.now() - createdAt < NEW_USER_WINDOW_MS;
+};
+
 const ManageUsersPage = ({ 
   stats, 
   users = [], 
@@ -558,6 +568,7 @@ const ManageUsersPage = ({
             {filteredUsers.map((user) => {
               const isEditing = editingUserId === user._id;
               const isBusy = busyUserId === user._id;
+              const userIsNew = isNewUser(user);
 
               return (
                 <div key={user._id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -706,6 +717,17 @@ const ManageUsersPage = ({
                               {getRoleIcon(user.role)}
                               {user.role || 'user'}
                             </span>
+                            {userIsNew && (
+                              <span className="group relative inline-flex items-center">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                  <Sparkles className="w-3 h-3" />
+                                  New
+                                </span>
+                                <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-56 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-center text-xs font-normal text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-gray-950">
+                                  This account was created within the last 7 days.
+                                </span>
+                              </span>
+                            )}
                             {user.isActive === false && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                                 <UserX className="w-3 h-3" />

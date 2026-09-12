@@ -10,6 +10,10 @@ router.use(protect);
 // Send custom SMS
 router.post('/custom', smsController.sendCustomSMS);
 
+// Read and delete persisted SMS warning logs
+router.get('/warnings', smsController.getSMSWarnings);
+router.delete('/warnings/:id', smsController.deleteSMSWarning);
+
 // Send test SMS
 router.post('/test', smsController.sendTestSMS);
 

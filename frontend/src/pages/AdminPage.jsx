@@ -80,6 +80,7 @@ import RunPredictionPage from './admin/RunPredictionPage';
 import ManageStationsPage from './admin/ManageStationsPage';
 import ManageUsersPage from './admin/ManageUsersPage';
 import SettingsPage from './admin/SettingsPage';
+import SMSWarningHistoryPage from './admin/SMSWarningHistoryPage';
 
 const AdminPage = () => {
   const dispatch = useDispatch();
@@ -111,6 +112,9 @@ const AdminPage = () => {
   const [forecastLoading, setForecastLoading] = useState(false);
   const [stations, setStations] = useState([]);
   const [predictions, setPredictions] = useState([]);
+  const [smsWarningRecords, setSmsWarningRecords] = useState([]);
+  const [selectedSmsWarningStation, setSelectedSmsWarningStation] = useState('all');
+  const [selectedPredictionStation, setSelectedPredictionStation] = useState('all');
   const [stationForm, setStationForm] = useState({
     stationName: '',
     stationId: '',
@@ -134,6 +138,7 @@ const AdminPage = () => {
     { id: 'prediction', label: 'Run Prediction', icon: TrendingUp, color: 'text-emerald-400' },
     { id: 'stations', label: 'Manage Stations', icon: MapPin, color: 'text-amber-400' },
     { id: 'users', label: 'Manage Users', icon: Users, color: 'text-purple-400' },
+    { id: 'sms-warnings', label: 'SMS Warnings', icon: Bell, color: 'text-violet-400' },
     { id: 'settings', label: 'Settings', icon: Settings, color: 'text-gray-400' },
   ];
 
@@ -155,24 +160,74 @@ const AdminPage = () => {
       bgColor: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
     },
-    {
-      title: 'Total Alerts',
-      value: stats.alerts,
-      icon: AlertTriangle,
-      color: 'from-amber-500 to-amber-600',
-      bgColor: 'bg-amber-50',
-      iconColor: 'text-amber-600',
-    },
-    {
-      title: 'Predictions',
-      value: stats.predictions,
-      icon: BarChart3,
-      color: 'from-purple-500 to-purple-600',
-      bgColor: 'bg-purple-50',
-      iconColor: 'text-purple-600',
-    },
+
   ];
 
+  const smsWarningStationOptions = [...new Set([
+    ...stations.map((station) => station.stationName || station.stationId),
+    ...smsWarningRecords.map((warning) => warning.station),
+  ].filter(Boolean))].sort();
+  const smsWarningsForStation = selectedSmsWarningStation === 'all'
+    ? smsWarningRecords
+    : smsWarningRecords.filter((warning) => warning.station === selectedSmsWarningStation);
+  const smsSentForStation = smsWarningsForStation.reduce((total, warning) => total + (warning.sentCount || 0), 0);
+  const predictionStationOptions = stations
+    .map((station) => ({
+      value: station.stationId || station.stationName,
+      label: station.stationName || station.stationId,
+    }))
+    .filter((station) => station.value && station.label);
+
+  const selectedStationPredictions = predictions.filter((prediction) => {
+    if (selectedPredictionStation === 'all') return true;
+
+    return prediction.stationCode === selectedPredictionStation || prediction.stationName === selectedPredictionStation;
+  });
+
+  const predictionCounts = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isTodayOrFuture = (date) => {
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+      return !Number.isNaN(checkDate.getTime()) && checkDate >= today;
+    };
+
+    // Same approach as AdminHomePage: retain the most recently generated
+    // prediction (timestamp/createdAt) for each station and forecast date.
+    const latestPredictionsByDate = {};
+    selectedStationPredictions.forEach((prediction) => {
+      if (!prediction.predictionDate || !isTodayOrFuture(prediction.predictionDate)) return;
+
+      const stationKey = prediction.stationCode || prediction.stationName || 'unknown-station';
+      const dateKey = new Date(prediction.predictionDate).toDateString();
+      const key = `${stationKey}-${dateKey}`;
+      const existingPrediction = latestPredictionsByDate[key];
+      const predictionCreatedAt = new Date(prediction.timestamp || prediction.createdAt);
+      const existingCreatedAt = new Date(existingPrediction?.timestamp || existingPrediction?.createdAt || 0);
+
+      if (!existingPrediction || predictionCreatedAt > existingCreatedAt) {
+        latestPredictionsByDate[key] = prediction;
+      }
+    });
+
+    const countForForecastDay = (daysAhead) => {
+      const forecastDate = new Date(today);
+      forecastDate.setDate(forecastDate.getDate() + daysAhead);
+      const forecastDateKey = forecastDate.toDateString();
+
+      return Object.values(latestPredictionsByDate).filter((prediction) => (
+        new Date(prediction.predictionDate).toDateString() === forecastDateKey
+      )).length;
+    };
+
+    return {
+      day1: countForForecastDay(0),
+      day2: countForForecastDay(1),
+      day3: countForForecastDay(2),
+    };
+  })();
   // Loading messages
   const loadingMessages = [
     'Initializing system...',
@@ -233,12 +288,13 @@ const AdminPage = () => {
 
   const fetchData = async () => {
     try {
-      const [usersRes, locationsRes, alertsRes, predictionsRes, stationsRes] = await Promise.allSettled([
+      const [usersRes, locationsRes, alertsRes, predictionsRes, stationsRes, smsWarningsRes] = await Promise.allSettled([
         api.get('/users'),
         api.get('/locations'),
         api.get('/alerts'),
         api.get('/predictions'),
-        api.get('/stations')
+        api.get('/stations'),
+        api.get('/sms/warnings')
       ]);
 
       const usersList = usersRes.status === 'fulfilled' ? usersRes.value.data.users || [] : [];
@@ -246,8 +302,10 @@ const AdminPage = () => {
       const alerts = alertsRes.status === 'fulfilled' ? alertsRes.value.data.alerts || [] : [];
       const predictionsList = predictionsRes.status === 'fulfilled' ? predictionsRes.value.data.predictions || [] : [];
       const stationsList = stationsRes.status === 'fulfilled' ? stationsRes.value.data.stations || [] : [];
+      const smsWarningsList = smsWarningsRes.status === 'fulfilled' ? smsWarningsRes.value.data.warnings || [] : [];
 
       setUsers(usersList);
+      setSmsWarningRecords(smsWarningsList);
       setStats({
         users: usersList.length,
         locations: locations.length,
@@ -287,6 +345,7 @@ const AdminPage = () => {
       const response = await api.get('/users');
       const usersList = response.data.users || [];
       setUsers(usersList);
+      setSmsWarningRecords(smsWarningsList);
       syncStats({ users: usersList.length });
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -597,6 +656,9 @@ const handleForecastSubmit = async (event) => {
           />
         );
 
+      case 'sms-warnings':
+        return <SMSWarningHistoryPage />;
+
       case 'settings':
         return <SettingsPage forecastForm={forecastForm} setForecastForm={setForecastForm} />;
 
@@ -729,6 +791,43 @@ const handleForecastSubmit = async (event) => {
                   </div>
                 );
               })}
+              <div className="rounded-xl border border-amber-100 bg-amber-50 p-3">
+                <div className="flex items-center justify-between gap-2 text-amber-700">
+                  <div className="flex items-center gap-2"><Bell className="h-4 w-4" /><p className="text-[10px] font-bold uppercase tracking-wide">SMS warnings</p></div>
+                  <span className="text-lg font-bold text-[#2b3674]">{smsSentForStation}</span>
+                </div>
+                <label htmlFor="sidebar-sms-station" className="sr-only">SMS warning station</label>
+                <select id="sidebar-sms-station" value={selectedSmsWarningStation} onChange={(event) => setSelectedSmsWarningStation(event.target.value)} className="mt-2 w-full rounded-md border border-amber-200 bg-white px-2 py-1.5 text-xs font-medium text-[#2b3674] outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+                  <option value="all">All stations</option>
+                  {smsWarningStationOptions.map((station) => <option key={station} value={station}>{station}</option>)}
+                </select>
+                <p className="mt-2 text-[10px] font-bold text-[#707eae]">SMS sent to selected station</p>
+              </div>
+              <div className="rounded-xl border border-purple-100 bg-purple-50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-purple-700">
+                    <BarChart3 className="h-4 w-4" />
+                    <p className="text-[10px] font-bold uppercase tracking-wide">Predictions</p>
+                  </div>
+                </div>
+                <label htmlFor="sidebar-prediction-station" className="sr-only">Prediction station</label>
+                <select
+                  id="sidebar-prediction-station"
+                  value={selectedPredictionStation}
+                  onChange={(event) => setSelectedPredictionStation(event.target.value)}
+                  className="mt-2 w-full rounded-md border border-purple-200 bg-white px-2 py-1.5 text-xs font-medium text-[#2b3674] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                >
+                  <option value="all">All stations</option>
+                  {predictionStationOptions.map((station) => (
+                    <option key={station.value} value={station.value}>{station.label}</option>
+                  ))}
+                </select>
+                <div className="mt-3 grid grid-cols-3 gap-1 text-center">
+                  <div><p className="text-sm font-bold text-[#2b3674]">{predictionCounts.day1}</p><p className="text-[9px] font-semibold text-[#707eae]">Day 1</p></div>
+                  <div><p className="text-sm font-bold text-[#2b3674]">{predictionCounts.day2}</p><p className="text-[9px] font-semibold text-[#707eae]">Day 2</p></div>
+                  <div><p className="text-sm font-bold text-[#2b3674]">{predictionCounts.day3}</p><p className="text-[9px] font-semibold text-[#707eae]">Day 3</p></div>
+                </div>
+              </div>
             </div>
           </section>
         )}
