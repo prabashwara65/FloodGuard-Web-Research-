@@ -1,6 +1,7 @@
 // frontend/src/pages/DashboardPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   User,
@@ -82,13 +83,14 @@ import {
   Shield as ShieldIcon,
 } from 'lucide-react';
 import api from '../api/axios';
-import { loadUser } from '../features/auth/authSlice';
+import { loadUser, logout } from '../features/auth/authSlice';
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useSelector((state) => state.auth);
   const [predictions, setPredictions] = useState([]);
-  const [alerts, setAlerts] = useState([]);
+  const [smsWarnings, setSmsWarnings] = useState([]);
   const [stations, setStations] = useState([]);
   const [assignedStations, setAssignedStations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -182,14 +184,14 @@ const DashboardPage = () => {
 
   const fetchData = async () => {
     try {
-      const [predRes, alertRes, stationRes] = await Promise.all([
-        api.get('/predictions/latest'),
-        api.get('/alerts/active'),
-        api.get('/stations')
+      const [predRes, stationRes, smsWarningRes] = await Promise.all([
+        api.get('/predictions'),
+        api.get('/stations'),
+        api.get('/sms/warnings')
       ]);
       setPredictions(predRes.data.predictions || []);
-      setAlerts(alertRes.data.alerts || []);
       setStations(stationRes.data.stations || []);
+      setSmsWarnings(smsWarningRes.data.warnings || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -210,51 +212,36 @@ const DashboardPage = () => {
     return d.getTime();
   };
 
-  // Get predictions for next 3 days starting from tomorrow
+  // Keep the newest prediction per available forecast date (up to three dates).
+  // This works for 1-day, 2-day, and 3-day forecast runs.
   const getNextThreeDayPredictions = (stationId, stationName) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayAfterTomorrow = new Date(today);
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-    const thirdDay = new Date(today);
-    thirdDay.setDate(thirdDay.getDate() + 3);
+    const latestByDate = {};
 
-    const targetDates = [
-      { date: tomorrow, label: 'Tomorrow' },
-      { date: dayAfterTomorrow, label: 'Day After Tomorrow' },
-      { date: thirdDay, label: '+3 Days' }
-    ];
+    predictions.filter((prediction) => (
+      (prediction.stationCode === stationId || prediction.stationName === stationName) && prediction.predictionDate
+    )).forEach((prediction) => {
+      const predictionDate = new Date(prediction.predictionDate);
+      predictionDate.setHours(0, 0, 0, 0);
+      if (Number.isNaN(predictionDate.getTime()) || predictionDate < today) return;
 
-    const stationPreds = predictions.filter(p => 
-      p.stationCode === stationId || 
-      p.stationName === stationName
-    );
-
-    const result = targetDates.map(({ date, label }) => {
-      const dateKey = getDateKey(date);
-      const matchingPreds = stationPreds.filter(p => {
-        if (!p.predictionDate) return false;
-        return getDateKey(new Date(p.predictionDate)) === dateKey;
-      });
-
-      if (matchingPreds.length === 0) {
-        return { date, label, prediction: null, hasData: false };
+      const dateKey = predictionDate.toDateString();
+      const existing = latestByDate[dateKey];
+      if (!existing || new Date(prediction.timestamp || prediction.createdAt || 0) > new Date(existing.timestamp || existing.createdAt || 0)) {
+        latestByDate[dateKey] = prediction;
       }
-
-      // Get the latest prediction for that date
-      const sorted = matchingPreds.sort((a, b) => {
-        const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
-        const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
-        return timeB - timeA;
-      });
-
-      return { date, label, prediction: sorted[0], hasData: true };
     });
 
-    return result;
+    return Object.values(latestByDate)
+      .sort((first, second) => new Date(first.predictionDate) - new Date(second.predictionDate))
+      .slice(0, 3)
+      .map((prediction, index) => ({
+        date: new Date(prediction.predictionDate),
+        label: index === 0 ? 'Day 1' : `Day ${index + 1}`,
+        prediction,
+        hasData: true,
+      }));
   };
 
   // Generate 3-day warnings for preferred station
@@ -412,6 +399,13 @@ const DashboardPage = () => {
       setProfileMessage(error.response?.data?.error || 'Unable to update your profile.');
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      dispatch(logout());
+      navigate('/login');
     }
   };
 
@@ -760,6 +754,28 @@ const DashboardPage = () => {
     );
   };
 
+  const userSmsWarnings = useMemo(() => {
+    if (!user || !smsWarnings.length) return [];
+    const userId = user._id || user.id;
+    const normalizedPhone = user.phone?.replace(/\D/g, '') || '';
+    const normalizedEmail = user.email?.toLowerCase() || '';
+
+    return smsWarnings.filter((warning) => {
+      if (!warning?.recipients?.length) return false;
+      return warning.recipients.some((recipient) => {
+        const recipientId = recipient.userId?._id || recipient.userId || '';
+        const recipientPhone = recipient.phone?.replace(/\D/g, '') || '';
+        const recipientEmail = recipient.email?.toLowerCase() || '';
+
+        return (
+          (recipientId && String(recipientId) === String(userId)) ||
+          (normalizedPhone && recipientPhone && normalizedPhone === recipientPhone) ||
+          (normalizedEmail && recipientEmail && normalizedEmail === recipientEmail)
+        );
+      });
+    });
+  }, [smsWarnings, user]);
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center">
@@ -832,12 +848,20 @@ const DashboardPage = () => {
                   <span className="font-semibold">{preferredStationName}</span>
                 </div>
               )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -866,41 +890,18 @@ const DashboardPage = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Active Alerts</p>
-                <p className={`text-2xl font-bold ${alerts.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}`}>
-                  {alerts.length}
+                <p className="text-sm text-gray-500 dark:text-gray-400">SMS Warnings</p>
+                <p className={`text-2xl font-bold ${userSmsWarnings.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                  {userSmsWarnings.length}
                 </p>
               </div>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${alerts.length > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-gray-100 dark:bg-gray-700'}`}>
-                <BellRing className={`w-6 h-6 ${alerts.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`} />
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${userSmsWarnings.length > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                <BellRing className={`w-6 h-6 ${userSmsWarnings.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`} />
               </div>
             </div>
             <div className="mt-2">
-              <span className={`text-xs font-medium ${alerts.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`}>
-                {alerts.length > 0 ? '⚠️ Action required' : 'All clear'}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">3-Day Warnings</p>
-                <p className={`text-2xl font-bold ${totalThreeDayWarnings > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                  {totalThreeDayWarnings}
-                </p>
-              </div>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${totalThreeDayWarnings > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
-                {totalThreeDayWarnings > 0 ? (
-                  <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
-                ) : (
-                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                )}
-              </div>
-            </div>
-            <div className="mt-2">
-              <span className={`text-xs ${totalThreeDayWarnings > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                {totalThreeDayWarnings > 0 ? `Next 3 days` : 'No warnings forecasted'}
+              <span className={`text-xs font-medium ${userSmsWarnings.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`}>
+                {userSmsWarnings.length > 0 ? 'Latest warning sent' : 'No mobile warnings'}
               </span>
             </div>
           </div>
@@ -1090,9 +1091,11 @@ const DashboardPage = () => {
                 <div className="space-y-3">
                   {assignedStations.map((station) => {
                     const nextThreeDays = getNextThreeDayPredictions(station.stationId, station.stationName);
-                    const hasWarning = nextThreeDays.some(day => day.hasData && day.prediction?.warning);
+                    const warningDays = nextThreeDays.filter(day => day.hasData && day.prediction?.warning);
+                    const hasWarning = warningDays.length > 0;
                     const isPreferred = user?.preferredStation && 
                       station.stationName?.toLowerCase() === user.preferredStation?.toLowerCase();
+                    const dayLabels = warningDays.map(day => day.label).join(', ');
                     
                     return (
                       <div key={station._id} className={`p-3 rounded-lg border ${
@@ -1140,9 +1143,41 @@ const DashboardPage = () => {
                             </div>
                           ))}
                         </div>
+                        {hasWarning && (
+                          <p className="mt-2 text-[10px] font-medium text-red-600 dark:text-red-300">
+                            Forecast warning in: {dayLabels}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {userSmsWarnings.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <BellRing className="w-5 h-5 text-red-600" />
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-white">SMS Warning Messages</h2>
+                </div>
+
+                <div className="space-y-3">
+                  {userSmsWarnings.slice(0, 3).map((warning, index) => (
+                    <div key={warning._id || index} className="rounded-lg border border-red-200 bg-red-50/60 p-3 dark:border-red-800 dark:bg-red-900/20">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
+                          {warning.station || 'Station'}
+                        </p>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {new Date(warning.createdAt || Date.now()).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                        {warning.message || 'Flood warning message sent to you.'}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

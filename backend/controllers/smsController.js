@@ -100,7 +100,15 @@ class SMSController {
     // Read the persisted SMS warning history.
     async getSMSWarnings(req, res) {
         try {
-            const warnings = await SMSWarning.find()
+            const isAdmin = req.user?.role === 'admin';
+            const recipientQuery = isAdmin ? {} : {
+                $or: [
+                    { 'recipients.userId': req.user?._id },
+                    { 'recipients.phone': req.user?.phone },
+                    { 'recipients.email': req.user?.email },
+                ].filter((condition) => Object.values(condition)[0]),
+            };
+            const warnings = await SMSWarning.find(recipientQuery)
                 .sort({ createdAt: -1 })
                 .populate('createdBy', 'name email')
                 .lean();
