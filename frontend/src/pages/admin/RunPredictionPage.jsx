@@ -739,17 +739,22 @@ const RunPredictionPage = ({
 
                 {forecastResult ? (
                     <div>
-                        <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:flex-row md:items-center md:justify-between">
+                        {/* Risk Level banner — solid green (normal) / solid red (warning), white text */}
+                        <div
+                            className={`mb-4 flex flex-col gap-3 rounded-2xl border p-4 md:flex-row md:items-center md:justify-between ${
+                                forecastResult.warning
+                                    ? 'border-red-500 bg-red-500'
+                                    : 'border-emerald-500 bg-emerald-500'
+                            }`}
+                        >
                             <div>
-                                <p className="text-sm text-slate-500">Risk Level</p>
-                                <p className={`text-2xl font-bold ${forecastResult.warning ? 'text-red-600' : 'text-emerald-600'}`}>
+                                <p className="text-sm font-medium text-white/80">Risk Level</p>
+                                <p className="text-2xl font-bold text-white">
                                     {forecastResult.riskLevel?.toUpperCase() || (forecastResult.warning ? 'HIGH' : 'LOW')}
                                 </p>
                             </div>
-                            <div className="text-sm text-slate-500">
-                                Threshold: <strong className="text-slate-700">{Number(forecastResult.threshold || 1.5).toFixed(1)}m</strong>
-                                <span className="mx-2 text-slate-300">|</span>
-                                Confidence: <strong className="text-slate-700">{forecastResult.confidence || 0}%</strong>
+                            <div className="text-sm text-white/90">
+                                Threshold: <strong className="text-white">{Number(forecastResult.threshold || 1.5).toFixed(1)}m</strong>
                             </div>
                         </div>
 

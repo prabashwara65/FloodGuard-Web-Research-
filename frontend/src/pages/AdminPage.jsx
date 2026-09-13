@@ -139,7 +139,6 @@ const AdminPage = () => {
     { id: 'stations', label: 'Manage Stations', icon: MapPin, color: 'text-amber-400' },
     { id: 'users', label: 'Manage Users', icon: Users, color: 'text-purple-400' },
     { id: 'sms-warnings', label: 'SMS Warnings', icon: Bell, color: 'text-violet-400' },
-    { id: 'settings', label: 'Settings', icon: Settings, color: 'text-gray-400' },
   ];
 
   // Stats card configuration
@@ -711,46 +710,30 @@ const handleForecastSubmit = async (event) => {
                 <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-200 bg-clip-text text-transparent">
                   FloodGuard
                 </h1>
-                <p className="text-xs text-slate-400">Admin Panel</p>
+                <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Admin Panel</p>
               </div>
             )}
           </div>
           <button
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 flex-shrink-0 hidden lg:block"
+            className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'} transition-all duration-200 flex-shrink-0 hidden lg:block`}
           >
             {isSidebarExpanded ? (
-              <ChevronLeft className="w-5 h-5 text-slate-400" />
+              <ChevronLeft className={`w-5 h-5 ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`} />
             ) : (
-              <ChevronRight className="w-5 h-5 text-slate-400" />
+              <ChevronRight className={`w-5 h-5 ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`} />
             )}
           </button>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 lg:hidden"
+            className={`p-1.5 rounded-lg ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'} transition-all duration-200 lg:hidden`}
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className={`w-5 h-5 ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`} />
           </button>
         </div>
 
-        {/* User Info */}
-        <div className={`p-4 border-b border-white/10 ${!isSidebarExpanded && 'px-3'}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg flex-shrink-0">
-              <span className="text-white font-semibold text-sm">
-                {user?.name?.charAt(0)?.toUpperCase() || 'A'}
-              </span>
-            </div>
-            {isSidebarExpanded && (
-              <div className="vision-admin-main flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{user?.name || 'Admin'}</p>
-                <p className="text-xs text-slate-400 truncate">{user?.email || 'admin@floodguard.com'}</p>
-              </div>
-            )}
-          </div>
-        </div>
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1.5">
+        <nav className="flex-shrink-0 overflow-y-auto p-3 space-y-1.5">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
@@ -761,13 +744,23 @@ const handleForecastSubmit = async (event) => {
                   setActiveView(item.id);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200 group ${
+                className={`w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-all duration-200 group ${
                   isActive
                     ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/25'
-                    : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                    : isDarkMode
+                      ? 'text-slate-200 hover:bg-white/10 hover:text-white'
+                      : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
                 } ${!isSidebarExpanded && 'justify-center'}`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                <Icon
+                  className={`w-5 h-5 ${
+                    isActive
+                      ? 'text-white'
+                      : isDarkMode
+                        ? 'text-slate-400 group-hover:text-white'
+                        : 'text-gray-600 group-hover:text-gray-900'
+                  }`}
+                />
                 {isSidebarExpanded && <span>{item.label}</span>}
                 {isActive && isSidebarExpanded && (
                   <div className="ml-auto w-1.5 h-8 bg-white rounded-full"></div>
@@ -777,35 +770,50 @@ const handleForecastSubmit = async (event) => {
           })}
         </nav>
 
-{/* Live dashboard summary */}
+        {/* Live dashboard summary — placed right under nav with tighter spacing */}
         {isSidebarExpanded && (
-          <section className="px-3 pt-4 pb-1">
-            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#a3aed0]">Live summary</p>
+          <section className="px-3 pt-3 pb-3 mt-auto">
+            <p className={`px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>Live summary</p>
             <div className="flex flex-col gap-2">
               {statsCards.map((stat) => {
                 const Icon = stat.icon;
                 return (
-                  <div key={stat.title} className="rounded-xl border border-[#edf0f7] bg-[#f8f9ff] p-3 transition hover:-translate-y-0.5 hover:shadow-md">
-                    <div className="flex items-center justify-between gap-2"><Icon className={`h-4 w-4 ${stat.iconColor}`} /><span className="text-lg font-bold text-[#2b3674]">{stat.value}</span></div>
-                    <p className="mt-2 text-[10px] font-bold leading-3 text-[#707eae]">{stat.title}</p>
+                  <div key={stat.title} className={`rounded-xl border p-3 transition hover:-translate-y-0.5 hover:shadow-md ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-[#edf0f7] bg-[#f8f9ff]'}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <Icon className={`h-4 w-4 ${stat.iconColor}`} />
+                      <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stat.value}</span>
+                    </div>
+                    <p className={`mt-2 text-[10px] font-bold leading-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-700'}`}>{stat.title}</p>
                   </div>
                 );
               })}
-              <div className="rounded-xl border border-amber-100 bg-amber-50 p-3">
-                <div className="flex items-center justify-between gap-2 text-amber-700">
-                  <div className="flex items-center gap-2"><Bell className="h-4 w-4" /><p className="text-[10px] font-bold uppercase tracking-wide">SMS warnings</p></div>
-                  <span className="text-lg font-bold text-[#2b3674]">{smsSentForStation}</span>
+              <div className={`rounded-xl border p-3 ${isDarkMode ? 'border-amber-900/40 bg-amber-900/20' : 'border-amber-100 bg-amber-50'}`}>
+                <div className={`flex items-center justify-between gap-2 ${isDarkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4" />
+                    <p className="text-[10px] font-bold uppercase tracking-wide">SMS warnings</p>
+                  </div>
+                  <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{smsSentForStation}</span>
                 </div>
                 <label htmlFor="sidebar-sms-station" className="sr-only">SMS warning station</label>
-                <select id="sidebar-sms-station" value={selectedSmsWarningStation} onChange={(event) => setSelectedSmsWarningStation(event.target.value)} className="mt-2 w-full rounded-md border border-amber-200 bg-white px-2 py-1.5 text-xs font-medium text-[#2b3674] outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+                <select
+                  id="sidebar-sms-station"
+                  value={selectedSmsWarningStation}
+                  onChange={(event) => setSelectedSmsWarningStation(event.target.value)}
+                  className={`mt-2 w-full rounded-md border px-2 py-1.5 text-xs font-medium outline-none focus:ring-2 ${
+                    isDarkMode
+                      ? 'border-amber-800 bg-gray-900 text-white focus:border-amber-500 focus:ring-amber-900/40'
+                      : 'border-amber-200 bg-white text-gray-900 focus:border-amber-500 focus:ring-amber-200'
+                  }`}
+                >
                   <option value="all">All stations</option>
                   {smsWarningStationOptions.map((station) => <option key={station} value={station}>{station}</option>)}
                 </select>
-                <p className="mt-2 text-[10px] font-bold text-[#707eae]">SMS sent to selected station</p>
+                <p className={`mt-2 text-[10px] font-bold ${isDarkMode ? 'text-slate-400' : 'text-gray-700'}`}>SMS sent to selected station</p>
               </div>
-              <div className="rounded-xl border border-purple-100 bg-purple-50 p-3">
+              <div className={`rounded-xl border p-3 ${isDarkMode ? 'border-purple-900/40 bg-purple-900/20' : 'border-purple-100 bg-purple-50'}`}>
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-purple-700">
+                  <div className={`flex items-center gap-2 ${isDarkMode ? 'text-purple-300' : 'text-purple-700'}`}>
                     <BarChart3 className="h-4 w-4" />
                     <p className="text-[10px] font-bold uppercase tracking-wide">Predictions</p>
                   </div>
@@ -815,7 +823,11 @@ const handleForecastSubmit = async (event) => {
                   id="sidebar-prediction-station"
                   value={selectedPredictionStation}
                   onChange={(event) => setSelectedPredictionStation(event.target.value)}
-                  className="mt-2 w-full rounded-md border border-purple-200 bg-white px-2 py-1.5 text-xs font-medium text-[#2b3674] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                  className={`mt-2 w-full rounded-md border px-2 py-1.5 text-xs font-medium outline-none focus:ring-2 ${
+                    isDarkMode
+                      ? 'border-purple-800 bg-gray-900 text-white focus:border-purple-500 focus:ring-purple-900/40'
+                      : 'border-purple-200 bg-white text-gray-900 focus:border-purple-500 focus:ring-purple-200'
+                  }`}
                 >
                   <option value="all">All stations</option>
                   {predictionStationOptions.map((station) => (
@@ -823,16 +835,23 @@ const handleForecastSubmit = async (event) => {
                   ))}
                 </select>
                 <div className="mt-3 grid grid-cols-3 gap-1 text-center">
-                  <div><p className="text-sm font-bold text-[#2b3674]">{predictionCounts.day1}</p><p className="text-[9px] font-semibold text-[#707eae]">Day 1</p></div>
-                  <div><p className="text-sm font-bold text-[#2b3674]">{predictionCounts.day2}</p><p className="text-[9px] font-semibold text-[#707eae]">Day 2</p></div>
-                  <div><p className="text-sm font-bold text-[#2b3674]">{predictionCounts.day3}</p><p className="text-[9px] font-semibold text-[#707eae]">Day 3</p></div>
+                  <div>
+                    <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{predictionCounts.day1}</p>
+                    <p className={`text-[9px] font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-700'}`}>Day 1</p>
+                  </div>
+                  <div>
+                    <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{predictionCounts.day2}</p>
+                    <p className={`text-[9px] font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-700'}`}>Day 2</p>
+                  </div>
+                  <div>
+                    <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{predictionCounts.day3}</p>
+                    <p className={`text-[9px] font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-700'}`}>Day 3</p>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
         )}
-
-        {/* Navigation */}
       </aside>
 
       {/* Main Content */}
@@ -843,7 +862,7 @@ const handleForecastSubmit = async (event) => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className={`lg:hidden p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
               >
                 <Menu className={`w-5 h-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
               </button>
@@ -851,14 +870,14 @@ const handleForecastSubmit = async (event) => {
                 <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                   {sidebarItems.find(item => item.id === activeView)?.label || 'Dashboard'}
                 </h2>
-                <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full capitalize">
+                <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${isDarkMode ? 'text-gray-400 bg-gray-700' : 'text-gray-500 bg-gray-100'}`}>
                   {activeView}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 md:gap-3">
-              {/* Search */}
+              {/* Search
               <div className={`hidden md:flex items-center ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} rounded-lg px-3 py-1.5 border focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all`}>
                 <Search className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`} />
                 <input
@@ -871,7 +890,7 @@ const handleForecastSubmit = async (event) => {
                 <kbd className="hidden sm:inline-block text-xs text-gray-400 border border-gray-200 dark:border-gray-600 rounded px-1.5 py-0.5">
                   ⌘K
                 </kbd>
-              </div>
+              </div> */}
 
               {/* Dark Mode Toggle */}
               <button
@@ -886,14 +905,40 @@ const handleForecastSubmit = async (event) => {
               </button>
 
               {/* Notifications */}
-              <button className={`relative p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}>
+              {/* <button className={`relative p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}>
                 <Bell className={`w-5 h-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 {notificationCount > 0 && (
                   <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
                     {notificationCount}
                   </span>
                 )}
-              </button>
+              </button> */}
+
+              {/* User Info (moved from sidebar) */}
+              <div className={`hidden md:flex items-center gap-3 pl-3 pr-1 border-l ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-md flex-shrink-0">
+                  <span className="text-white font-semibold text-sm">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+                  </span>
+                </div>
+                <div className="leading-tight">
+                  <p className={`text-sm font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {user?.name || 'Admin'}
+                  </p>
+                  <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {user?.email || 'admin@floodguard.com'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Mobile avatar only */}
+              <div className="md:hidden flex items-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-md">
+                  <span className="text-white font-semibold text-xs">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+                  </span>
+                </div>
+              </div>
 
               {/* Logout */}
               <button 
@@ -902,7 +947,11 @@ const handleForecastSubmit = async (event) => {
                     handleLogout();
                   }
                 }}
-                className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  isDarkMode
+                    ? 'text-gray-300 hover:bg-red-900/20 hover:text-red-400'
+                    : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
+                }`}
               >
                 <LogOut className="w-4 h-4" />
                 <span className="text-sm font-medium">Logout</span>
@@ -915,7 +964,11 @@ const handleForecastSubmit = async (event) => {
                     handleLogout();
                   }
                 }}
-                className="md:hidden p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                className={`md:hidden p-2 rounded-lg transition-colors ${
+                  isDarkMode
+                    ? 'text-gray-300 hover:bg-red-900/20 hover:text-red-400'
+                    : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
+                }`}
               >
                 <LogOut className="w-5 h-5" />
               </button>
